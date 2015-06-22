@@ -1,0 +1,87 @@
+<%
+running = con['State']['Running']
+paused = con['State']['Paused']
+id = con['Id']
+if con['_Count'] is not None:
+container_name = '%s #%s' % (con['_Name'], con['_Count'])
+else:
+container_name =con['_Name']
+end
+%>
+<tr>
+    <td>
+        % if nameless:
+        <a class="label label-danger label-large container-name" title="Running" href="/details/{{id}}">{{container_name}}</a>
+        % elif running and not paused:
+        <a class="label label-success label-large container-name" title="Running" href="/details/{{id}}">{{container_name}}</a>
+        % elif running and paused:
+        <a class="label label-success label-large container-name" title="Paused" href="/details/{{id}}"><span
+                class="glyphicon glyphicon-pause"></span>{{container_name}}</a>
+        % else:
+        <a class="label label-info label-large container-name" title="Stopped" href="/details/{{id}}">{{container_name}}</a>
+        % end
+        <a class="btn btn-primary glyphicon glyphicon-stats white mod" target="_blank" href="/logs/{{id}}"
+           title="Logs"></a>
+
+    </td>
+    <td>
+        {{con['Config']['Image'][:40] + '...' if len(con['Config']['Image'])>40 else con['Config']['Image']}}
+    </td>
+    <td>
+        % if con['NetworkSettings']['IPAddress']:
+        <span class="glyphicon glyphicon-signal green"></span> {{con['NetworkSettings']['IPAddress']}}
+        % end
+        % try:
+        <br/>
+        <span class="glyphicon glyphicon-globe blue"></span> {{!'<br /><span class="glyphicon glyphicon-globe blue"></span> '.join(hosts[con['NetworkSettings']['IPAddress']])}}
+        % fqhostname = hosts[con['NetworkSettings']['IPAddress']][0]
+        % except Exception:
+        % fqhostname = con['NetworkSettings']['IPAddress']
+        % end
+    </td>
+    <td>
+        % has_console = False
+        % if con['NetworkSettings']['Ports']:
+        % for port, hport in con['NetworkSettings']['Ports'].items():
+        % container_port = port.split('/')[0]
+        % if container_port == '4200':
+        % has_console = True
+        % end
+        <div class="portlist">
+            <a target="_blank" href="http://{{fqhostname}}:{{port.split('/')[0]}}">
+                {{container_port}}</a>
+            % if hport:
+            :
+            <a target="_blank" href="http://{{hostname}}:{{hport[0]['HostPort']}}/">
+                {{hport[0]['HostPort']}}
+            </a>
+            % end
+        </div>
+        % end
+        % elif con['Config']['ExposedPorts']:
+        % for port, hport in con['Config']['ExposedPorts'].items():
+        % container_port = port.split('/')[0]
+        <div>
+            {{container_port}}
+        </div>
+        % end
+        % end
+    </td>
+
+    <td align="right">
+        % if running:
+        <a class="btn btn-default glyphicon glyphicon-stop red startstop" title="Stop" href="/stop/{{con['Id']}}"></a>
+        % if has_console:
+        <a class="btn btn-default glyphicon glyphicon-console blue" title="Console"
+           href="http://{{con['NetworkSettings']['IPAddress']}}:4200/" target="_blank"></a>
+        % else:
+        <span class="btn glyphicon glyphicon-th invisible"></span>
+        % end
+        % else:
+        <a class="btn btn-default glyphicon glyphicon-play green startstop" title="Start"
+           href="/start/{{con['Id']}}"></a>
+        <span class="btn glyphicon glyphicon-th invisible"></span>
+        % end
+        <a class="btn btn-danger glyphicon glyphicon-remove white confirmdelete" title="Delete" href="/delete/{{con['Id']}}"></a>
+    </td>
+</tr>

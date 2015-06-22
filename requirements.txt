@@ -1,0 +1,4 @@
+bottle
+PyYAML
+docker-py
+docker-compose==1.1.0-rc2

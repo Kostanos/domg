@@ -1,0 +1,95 @@
+.red {
+    color: maroon;
+}
+
+.green {
+    color: seagreen;
+}
+
+.blue {
+    color: royalblue;
+}
+
+.white {
+    color: #FFFFFF;
+}
+
+.black {
+    color: #000000;
+}
+
+.invisible {
+    visibility: hidden;
+}
+
+.label-large {
+    display: inline-block;
+    padding: 6px 12px;
+    margin: 2px 1px;
+    font-size: 14px;
+    font-weight: 400;
+    min-width: 170px;
+    line-height: 1.42857143;
+    border: 1px solid transparent;
+    vertical-align: middle;
+}
+
+.label-medium {
+    display: inline-block;
+    padding: 6px 12px;
+    margin: 2px 1px;
+    font-size: 14px;
+    font-weight: 400;
+    min-width: 80px;
+    line-height: 1.42857143;
+    border: 1px solid transparent;
+    vertical-align: middle;
+}
+
+.portlist a {
+    font-size: 16px;
+}
+
+pre {
+    counter-reset: line-numbering;
+    font-family: Menlo, Monaco, monospace;
+}
+
+pre .line::before {
+    content: counter(line-numbering);
+    counter-increment: line-numbering;
+    padding-right: 1em;
+    width: 3.5em;
+    text-align: right;
+    opacity: 0.5;
+    display: inline-block;
+}
+
+.modal-xl {
+    width: 90%;
+}
+.normal-font {
+    font-size: 100%;
+}
+
+.glyphicon-refresh-animate {
+    -animation: spin .7s infinite linear;
+    -webkit-animation: spin2 .7s infinite linear;
+}
+
+@-webkit-keyframes spin2 {
+    from { -webkit-transform: rotate(0deg);}
+    to { -webkit-transform: rotate(360deg);}
+}
+
+@keyframes spin {
+    from { transform: scale(1) rotate(0deg);}
+    to { transform: scale(1) rotate(360deg);}
+}
+
+.left5 {
+    margin-left: 5px;
+}
+.pad6-12 {
+    padding: 6px 12px;
+}

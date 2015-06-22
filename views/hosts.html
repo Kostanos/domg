@@ -1,0 +1,57 @@
+% rebase('base.html')
+<div class="page-header">
+    <button class="btn btn-primary pull-right">Add entry (TODO)</button>
+    <h1>Hosts</h1>
+</div>
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>IP</th>
+        <th>Hostname</th>
+        <th style="text-align: right">Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+
+    % host_list = hosts.get_reversed()
+    % ip_list = sorted(host_list.keys())
+    % inactive_ip_count = 0
+
+    % for ip in ip_list:
+    % if ip[0:len(begins_with)] != begins_with:
+    % continue
+    % end
+    % for idx, host in enumerate(host_list[ip]):
+    <tr>
+        % if idx == 0:
+        <td rowspan="{{len(host_list[ip])}}">
+            % if ip in active_ip_list:
+            {{ip}}
+            % else:
+            % inactive_ip_count += 1
+            <strong class="red">{{ip}}</strong>
+            <span class="glyphicon glyphicon-ban-circle red" title="IP is inactive"></span>
+            % end
+        </td>
+        % end
+        <td class="container-name">
+            {{host}}
+        </td>
+        <td align="right">
+            <a class="btn btn-danger glyphicon glyphicon-remove white confirmdelete"
+               title="Delete" data-question="Are you sure you want to delete host <em>{{host}}</em>?"
+               href="/delete-host/{{host}}"></a>
+        </td>
+    </tr>
+    % end
+    % end
+
+    </tbody>
+</table>
+
+% if inactive_ip_count>0:
+<a href="/delete-inactive-hosts" class="btn btn-danger btn-lg white confirmdelete" data-question="Are you sure you want to delete {{inactive_ip_count}} hosts?">
+    <span class="glyphicon glyphicon-remove" style="vertical-align: text-top"></span>
+    Delete ALL inactive hosts
+</a>
+% end

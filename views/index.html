@@ -1,0 +1,54 @@
+% rebase('base.html')
+<div class="page-header">
+    <h1>Containers</h1>
+</div>
+<table class="table">
+    <thead>
+    <tr>
+        <th>Group</th>
+        <th>Name</th>
+        <th>Image</th>
+        <th>IP</th>
+        <th>Ports</th>
+        <th style="text-align: right">Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    % if running_containers:
+    <tr>
+        <td class="bg-success" colspan="6">Running</td>
+    </tr>
+    % end
+    % for con_group in running_containers:
+    % include('container_group_row.html', con_group=con_group, cnt=len(running_containers[con_group])+1, nameless=False)
+    % for con in running_containers[con_group]:
+    % include('container_row.html', con=con, nameless=False)
+    % end
+    % end
+
+    % if human_containers:
+    <tr>
+        <td class="bg-info" colspan="6">Stopped</td>
+    </tr>
+    % end
+    % for con_group in human_containers:
+    % include('container_group_row.html', con_group=con_group, cnt=len(human_containers[con_group])+1, nameless=False)
+    % for con in human_containers[con_group]:
+    % include('container_row.html', con=con, nameless=False)
+    % end
+    % end
+
+    % if computer_containers:
+    <tr>
+        <td class="bg-danger" colspan="6">Nameles images</td>
+    </tr>
+    % end
+    % for con_group in computer_containers:
+    % include('container_group_row.html', con_group=con_group, cnt=len(computer_containers[con_group])+1, nameless=False)
+    % for con in computer_containers[con_group]:
+    % include('container_row.html', con=con, nameless=True)
+    % end
+    % end
+
+    </tbody>
+</table>

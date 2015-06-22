@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<!--suppress ALL -->
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>{{title or 'No title'}}</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="/static/css/bootstrap-theme.min.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="/static/css/theme.css" rel="stylesheet">
+    <script src="/static/js/jquery.min.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+</head>
+
+<body role="document">
+
+<!-- Fixed navbar -->
+<nav class="navbar navbar-inverse">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                    aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">DoMG</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                {{!menu}}
+            </ul>
+        </div>
+        <!--/.nav-collapse -->
+    </div>
+</nav>
+
+<div class="container theme-showcase" role="main">
+    % messages = app.get_flashed_messages()
+    % if messages:
+    % for m in messages:
+    % flashlevel = m[1] if m[1] is not None else 'info'
+    <div class="alert alert-{{flashlevel}} alert-dismissible" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
+                aria-hidden="true">&times;</span></button>
+        {{!m[0]}}
+    </div>
+    % end
+    % end
+
+    {{!base}}
+</div>
+<div class="modal fade" id="modal-main">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="modal-title">Logs</h4>
+            </div>
+            <div class="modal-body" id="modal-content">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
+
+<div class="modal fade" id="modal-confirm">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">Confirm</h4>
+            </div>
+            <div class="modal-body" id="modal-confirm-content">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+                <button type="button" class="btn btn-danger" id="modal-confirm-action">Yes</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
+
+<!-- /container -->
+<script type="text/javascript">
+    $(document).on('click', 'a.mod', function (event) {
+        event.preventDefault();
+        $('#modal-content').load($(this).attr('href'), function () {
+            $("#modal-content pre").html(function (index, html) {
+                return html.replace(/^(.*)$/mg, "<span class=\"line\">$1</span>")
+            });
+            $('#modal-title').html('Logs');
+            $('#modal-main').modal('show');
+        });
+
+    });
+    $(document).on('click', 'a.startstop', function (event) {
+        event.preventDefault();
+        var me = $(this);
+        me.removeClass('glyphicon-stop glyphicon-start red green');
+        me.addClass('glyphicon-refresh glyphicon-refresh-animate');
+        $.get(me.attr('href'), function (data) {
+            if (data.error) {
+                me.addClass('glyphicon-ban-circle red disabled');
+                $('#modal-content').html(data.error);
+                $('#modal-title').html('Error');
+                $('#modal-main').modal('show');
+            } else {
+                window.location.reload();
+                me.attr('href', data.href);
+                me.addClass(data.icon);
+            }
+        }).always(function () {
+            me.removeClass('glyphicon-refresh glyphicon-refresh-animate');
+        }).fail(function () {
+            me.addClass('glyphicon-ban-circle red disabled');
+        });
+    });
+    $(document).on('click', 'a.confirmdelete', function (event) {
+        event.preventDefault();
+        var me = $(this);
+        var question = me.data('question') || "Are you sure you want to delete container <em>" + me.parent().parent().find("td a.container-name").html() + "</em>?";
+        $('#modal-confirm-content').html(question);
+        $('#modal-confirm-action').off('click');
+        $('#modal-confirm-action').on('click', function () {
+            window.location.href = me.attr('href');
+        });
+        $('#modal-confirm').modal('show');
+    });
+</script>
+</body>
+</html>

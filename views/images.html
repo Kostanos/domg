@@ -1,0 +1,35 @@
+% rebase('base.html')
+<div class="page-header">
+    <h1>Images</h1>
+</div>
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Volumes</th>
+        <th>Ports</th>
+        <th style="text-align: right">Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+
+    % for img in images:
+    % tags = "<br/>".join(img['tags']).replace('<none>', '&lt;none&gt;')
+    % volumes = "<br/>".join(img['inspect']['Config']['Volumes'].keys() if img['inspect']['Config']['Volumes'] else [])
+    % ports = "<br/>".join(img['inspect']['Config']['ExposedPorts'].keys() if img['inspect']['Config']['ExposedPorts'] else [])
+    <tr>
+        <td class="container-name">
+            {{!tags}}<br/>
+            <span>{{img['inspect']['Id']}}</span>
+        </td>
+        <td>{{!volumes}}</td>
+        <td>{{!ports}}</td>
+        <td align="right">
+            <a class="btn btn-danger glyphicon glyphicon-remove white confirmdelete" title="Delete"
+               href="/deleteimage/{{img['inspect']['Id']}}"></a>
+        </td>
+    </tr>
+    % end
+
+    </tbody>
+</table>

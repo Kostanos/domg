@@ -1,0 +1,135 @@
+% rebase('base.html')
+<div class="page-header">
+    <h1>Container details</h1>
+</div>
+<div class="col-md-3">
+    <div class="panel panel-success">
+        <div class="panel-heading">
+            <h3 class="panel-title">Name</h3>
+        </div>
+        <div class="panel-body">
+            {{details['Name'][1:]}}
+        </div>
+    </div>
+</div>
+
+<div class="col-md-5">
+    <div class="panel panel-success">
+        <div class="panel-heading">
+            <h3 class="panel-title">Status</h3>
+        </div>
+        <div class="panel-body">
+            % if details['State']['Paused'] == True:
+            Paused
+            % elif details['State']['Running'] == True:
+            Running for {{details['State']['StartedAt']}}
+            % elif details['State']['Restarting'] == True:
+            Restarting
+            % else:
+            Stopped {{details['State']['FinishedAt']}}. Was up for {{details['State']['UpFor']}}
+            % end
+        </div>
+    </div>
+</div>
+
+<div class="col-md-2">
+    <div class="panel panel-success">
+        <div class="panel-heading">
+            <h3 class="panel-title">Logs</h3>
+        </div>
+        <div class="panel-body">
+            <a target="_blank" href="/logs/{{details['Id']}}" title="Logs">Click to view</a>
+        </div>
+    </div>
+</div>
+
+<div class="col-md-2">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h3 class="panel-title">IP</h3>
+        </div>
+        <div class="panel-body">
+            {{details['NetworkSettings']['IPAddress']}}
+        </div>
+    </div>
+</div>
+
+
+<div class="col-md-10">
+    <div class="panel panel-info">
+        <div class="panel-heading">
+            <h3 class="panel-title">Volumes</h3>
+        </div>
+        <div class="panel-body">
+            <ul class="list-group">
+                % for cpath, hpath in details['Volumes'].items():
+                <li class="list-group-item">
+                    {{cpath}}
+                    % if hpath is not None:
+                    <span class="pull-right label label-info normal-font left5 pad6-12">{{hpath}}</span>
+                    % end
+                </li>
+                % end
+            </ul>
+        </div>
+    </div>
+
+    <div class="panel panel-warning">
+        <div class="panel-heading">
+            <h3 class="panel-title">Links</h3>
+        </div>
+        <div class="panel-body">
+            <ul class="list-group">
+                % link_list = {}
+                % container_links = details['HostConfig']['Links'] if details['HostConfig']['Links'] else []
+                % for link in container_links:
+                % cname, clink = link.split(':')
+                % if cname in link_list:
+                % link_list[cname].append(clink.split('/')[2])
+                % else:
+                % link_list[cname] = [clink.split('/')[2]]
+                % end
+                % end
+                % for cname, clink in link_list.items():
+                % clink = sorted(clink, key=len, reverse=True)
+                <li class="list-group-item">
+                    {{cname[1:]}}
+                    <span class="pull-right label label-warning normal-font left5 pad6-12">
+                        {{!'</span> <span class="pull-right label label-warning normal-font left5 pad6-12">'.join(clink)}}
+                    </span>
+                </li>
+                % end
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="col-md-2">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h3 class="panel-title">Ports</h3>
+        </div>
+        <div class="panel-body">
+            <ul class="list-group">
+                % if details['NetworkSettings']['Ports']:
+                % for port, hport in details['NetworkSettings']['Ports'].items():
+                % container_port = port.split('/')[0]
+                <li class="list-group-item">
+                    <a target="_blank" href="http://{{details['NetworkSettings']['IPAddress']}}:{{port.split('/')[0]}}">
+                        {{container_port}}</a>
+                    % if hport:
+                    :
+                    <a target="_blank" href="http://localhost:{{hport[0]['HostPort']}}/">
+                        {{hport[0]['HostPort']}}
+                    </a>
+                    % end
+                </li>
+                % end
+                % end
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div>
+
+</div>
