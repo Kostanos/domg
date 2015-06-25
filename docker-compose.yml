@@ -1,0 +1,9 @@
+apps:
+  build: .
+  volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    - .:/home/user/application/services
+    - /etc/hosts:/host_hosts
+    - ~/.ssh:/home/user/.ssh
+  hostname: containers
+  domainname: domg

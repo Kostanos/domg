@@ -1,7 +1,9 @@
 # coding=utf-8
 """
-Useful classes
+Useful classes borrowed from google.com
 """
+__author__ = 'talpah@gmail.com'
+
 import socket
 import os
 import re
@@ -9,8 +11,6 @@ import yaml
 from bottle import request, response, PluginError
 from datetime import datetime
 from datetime import timedelta
-
-__author__ = 'cosmin'
 
 
 class Configuration(object):

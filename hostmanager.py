@@ -2,7 +2,7 @@
 """
 Updates hosts file based on docker containers
 """
-__author__ = 'cosmin'
+__author__ = 'talpah@gmail.com'
 
 import json
 from os import getenv
@@ -12,7 +12,7 @@ from lib import Hosts
 from docker import Client
 
 HOSTS_PATH = '/host_hosts'
-DOMAIN_SUFFIX = '.domg-dev.com'
+DOMAIN_SUFFIX = '.local.development'
 
 
 def get_ip(container_id):
