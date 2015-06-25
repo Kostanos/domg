@@ -232,6 +232,7 @@ def delete_inactive_hosts():
     hosts = Hosts(HOSTS_PATH)
     reversed_list = hosts.get_reversed()
     for ip in reversed_list:
+        # TODO: DO NOT hardcode ip here
         if ip[0:9] == '172.17.0.' and ip not in active_ip_list:
             hosts.remove_all(reversed_list[ip])
     hosts.write(HOSTS_PATH)
