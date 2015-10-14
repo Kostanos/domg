@@ -58,7 +58,7 @@ end
             % end
         </div>
         % end
-        % elif con['Config']['ExposedPorts']:
+        % elif 'ExposedPorts' in con['Config'] and con['Config']['ExposedPorts']:
         % for port, hport in con['Config']['ExposedPorts'].items():
         % container_port = port.split('/')[0]
         <div>
