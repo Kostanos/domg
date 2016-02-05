@@ -61,6 +61,8 @@ if __name__ == '__main__':
 
     for event in docker.events():
         event = json.loads(event)
+        if 'status' not in event:
+            continue
         if event['status'] == 'start':
             hostname = get_hostname(event['id'])
             if hostname is None:
