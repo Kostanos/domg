@@ -4,19 +4,20 @@
 """
 The manager
 """
+
 __author__ = 'talpah@gmail.com'
 
 import json
 import os
 import re
+from datetime import datetime
 from time import strptime, mktime
 
 import bottle
-from datetime import datetime
 from docker import Client
 from docker.errors import APIError
-from hostmanager import HOSTS_PATH
 
+from hostmanager import HOSTS_PATH
 from lib import FlashMsgPlugin, Hosts, group_containers_by_name, human
 
 STATIC = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'static')
