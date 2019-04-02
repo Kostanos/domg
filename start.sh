@@ -1,3 +1,3 @@
 #!/bin/bash
-python hostmanager.py &
-python app.py
+python -u hostmanager.py &
+python -u app.py

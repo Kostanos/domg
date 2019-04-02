@@ -49,7 +49,9 @@
             <h3 class="panel-title">IP</h3>
         </div>
         <div class="panel-body">
-            {{details['NetworkSettings']['IPAddress']}}
+            % for net in details['NetworkSettings']['Networks']:
+            {{details['NetworkSettings']['Networks'][net]['IPAddress']}}
+            % end
         </div>
     </div>
 </div>

@@ -28,12 +28,16 @@ end
         {{con['Config']['Image'][:40] + '...' if len(con['Config']['Image'])>40 else con['Config']['Image']}}
     </td>
     <td>
-        % if con['NetworkSettings']['IPAddress']:
-        <span class="glyphicon glyphicon-signal green"></span> {{con['NetworkSettings']['IPAddress']}}
+        % for net in con['NetworkSettings']['Networks']:
+            <span class="glyphicon glyphicon-signal green"></span> {{con['NetworkSettings']['Networks'][net]['IPAddress']}}
         % end
         % try:
         <br/>
-        <span class="glyphicon glyphicon-globe blue"></span> {{!'<br /><span class="glyphicon glyphicon-globe blue"></span> '.join(hosts[con['NetworkSettings']['IPAddress']])}}
+        <span class="glyphicon glyphicon-globe blue"></span>
+        % for net in con['NetworkSettings']['Networks']:
+            {{!'<br /><span class="glyphicon glyphicon-globe blue"></span> '.join(hosts[con['NetworkSettings']['Networks'][net]['IPAddress']])}}
+        % end
+
         % fqhostname = hosts[con['NetworkSettings']['IPAddress']][0]
         % except Exception:
         % fqhostname = con['NetworkSettings']['IPAddress']

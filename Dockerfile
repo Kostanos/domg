@@ -1,16 +1,13 @@
-FROM google/python
+FROM python:3
 
 EXPOSE 80
 
+ENV PYTHONUNBUFFERED=0
+
 WORKDIR /home/user/application
 
-ADD start.sh /home/user/start.sh
-ADD . /home/user/application
+COPY . /home/user/application
 
 RUN pip install -r requirements.txt
 
-VOLUME ["/home/user/application/services"]
-
-ENV PYTHONUNBUFFERED=0
-
-CMD ["/home/user/start.sh"]
+CMD ["/home/user/application/start.sh"]
