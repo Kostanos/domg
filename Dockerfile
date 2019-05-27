@@ -2,7 +2,7 @@ FROM python:3
 
 EXPOSE 80
 
-ENV PYTHONUNBUFFERED=0
+ENV PYTHONUNBUFFERED=1
 
 WORKDIR /home/user/application
 

@@ -5,3 +5,6 @@ apps:
     - /etc/hosts:/host_hosts
   hostname: containers
   domainname: domg
+  environment:
+    HOSTNAME: "containers.local.dev"
+    PYTHONUNBUFFERED: 1

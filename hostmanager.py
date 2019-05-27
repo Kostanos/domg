@@ -56,12 +56,12 @@ if __name__ == '__main__':
     hostname = getenv('HOSTNAME', None)
     if hostname:
         if '.' not in hostname:
-            hostname = "%s%s" % (hostname, DOMAIN_SUFFIX)
-        print("Adding %s" % hostname)
+            hostname = "{}{}".format(hostname, DOMAIN_SUFFIX)
+        print("Adding {}".format(hostname))
         hosts = Hosts(HOSTS_PATH)
         my_ip = check_output(["/bin/sh", "-c", "ip -4 -f inet -o addr show eth0 | awk '{print $4}' | cut -d/ -f1"])
         my_ip = my_ip.decode().strip()
-        print("My IP: %s" % my_ip)
+        print("My IP: {}" .format(my_ip))
         hosts.set_one(hostname, my_ip)
         hosts.write(HOSTS_PATH)
         print("Go to http://%s/" % hostname)
@@ -73,17 +73,19 @@ if __name__ == '__main__':
         if event['status'] == 'start':
             hostname = get_hostname(event['id'])
             if hostname is None:
+                print("ERR: Event 'start' received but no hostname found for {}".format(event['id']))
                 continue
             container_ip = get_ip(event['id'])
             if not container_ip:
+                print("ERR: Could not find IP address for {}".format(hostname))
                 continue
-            print("Adding %s" % hostname)
+            print("Adding {} as {}".format(hostname, container_ip))
             hosts = Hosts(HOSTS_PATH)
             hosts.set_one(hostname, container_ip)
             hosts.write(HOSTS_PATH)
         elif event['status'] == 'die':
             hostname = get_hostname(event['id'])
-            print("Removing %s" % hostname)
+            print("Removing {}".format(hostname))
             hosts = Hosts(HOSTS_PATH)
             hosts.remove_one(hostname)
             hosts.write(HOSTS_PATH)
