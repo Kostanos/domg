@@ -36,9 +36,9 @@ end
         <span class="glyphicon glyphicon-globe blue"></span>
         % for net in con['NetworkSettings']['Networks']:
             {{!'<br /><span class="glyphicon glyphicon-globe blue"></span> '.join(hosts[con['NetworkSettings']['Networks'][net]['IPAddress']])}}
+            % fqhostname = hosts[con['NetworkSettings']['Networks'][net]['IPAddress']][0]
         % end
 
-        % fqhostname = hosts[con['NetworkSettings']['IPAddress']][0]
         % except Exception:
         % fqhostname = con['NetworkSettings']['IPAddress']
         % end
