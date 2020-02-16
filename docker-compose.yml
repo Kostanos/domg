@@ -1,0 +1,10 @@
+apps:
+  build: .
+  volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    - /etc/hosts:/host_hosts
+  hostname: containers
+  domainname: domg
+  environment:
+    HOSTNAME: "containers.local.dev"
+    PYTHONUNBUFFERED: 1

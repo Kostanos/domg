@@ -49,7 +49,9 @@
             <h3 class="panel-title">IP</h3>
         </div>
         <div class="panel-body">
-            {{details['NetworkSettings']['IPAddress']}}
+            % for net in details['NetworkSettings']['Networks']:
+            {{details['NetworkSettings']['Networks'][net]['IPAddress']}}
+            % end
         </div>
     </div>
 </div>
@@ -62,12 +64,10 @@
         </div>
         <div class="panel-body">
             <ul class="list-group">
-                % for cpath, hpath in details['Volumes'].items():
+                % for cvol in details['Mounts']:
                 <li class="list-group-item">
-                    {{cpath}}
-                    % if hpath is not None:
-                    <span class="pull-right label label-info normal-font left5 pad6-12">{{hpath}}</span>
-                    % end
+                    {{cvol['Source']}}
+                    <span class="pull-right label label-info normal-font left5 pad6-12">{{cvol['Destination']}}</span>
                 </li>
                 % end
             </ul>

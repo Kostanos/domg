@@ -4,17 +4,20 @@
 """
 The manager
 """
+
+__author__ = 'talpah@gmail.com'
+
 import json
 import os
 import re
+from datetime import datetime
 from time import strptime, mktime
 
 import bottle
-from datetime import datetime
 from docker import Client
 from docker.errors import APIError
-from hostmanager import HOSTS_PATH
 
+from hostmanager import HOSTS_PATH
 from lib import FlashMsgPlugin, Hosts, group_containers_by_name, human
 
 STATIC = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'static')
@@ -91,7 +94,7 @@ def index():
     computer_containers = group_containers_by_name(computer_containers)
 
     return bottle.template('index.html',
-                           title="DoMG",
+                           title="Appstore",
                            menu=generate_menu(),
                            hosts=Hosts(HOSTS_PATH).get_reversed(),
                            running_containers=running_containers,
@@ -117,7 +120,7 @@ def container_details(container_id):
     details['State']['UpFor'] = human(finished_at - started_at, past_tense='{}', future_tense='{}')
     details['State']['UpFor'] = details['State']['UpFor'] if details['State']['UpFor'] else 'less than a second'
     return bottle.template('details.html',
-                           title="DoMG",
+                           title="Appstore",
                            menu=generate_menu(),
                            details=details)
 
@@ -126,7 +129,7 @@ def container_details(container_id):
 def list_images():
     images = docker.images()
     image_details = [{'tags': img['RepoTags'], 'inspect': docker.inspect_image(img['Id'])} for img in images]
-    return bottle.template('images.html', title="Images | DoMG", menu=generate_menu(), images=image_details)
+    return bottle.template('images.html', title="Images | Appstore", menu=generate_menu(), images=image_details)
 
 
 @bottle.route('/deleteimage/<image_id>', name="image_delete", method="GET")
@@ -144,7 +147,7 @@ def logs(container_id):
     log = docker.logs(container_id)
     if bottle.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return '<pre>%s</pre>' % log
-    return bottle.template('logs.html', title="Logs | DoMG", menu=generate_menu(), log=log)
+    return bottle.template('logs.html', title="Logs | Appstore", menu=generate_menu(), log=log)
 
 
 @bottle.route('/delete/<container_id>', name="delete", method="GET")
@@ -206,7 +209,7 @@ def list_hosts():
                'IPAddress' in info['NetworkSettings']]
 
     return bottle.template('hosts.html',
-                           title="Hosts | DoMG",
+                           title="Hosts | Appstore",
                            menu=generate_menu(),
                            hosts=hosts,
                            active_ip_list=ip_list,
@@ -230,15 +233,11 @@ def delete_inactive_hosts():
     hosts = Hosts(HOSTS_PATH)
     reversed_list = hosts.get_reversed()
     for ip in reversed_list:
+        # TODO: DO NOT hardcode ip here
         if ip[0:9] == '172.17.0.' and ip not in active_ip_list:
             hosts.remove_all(reversed_list[ip])
     hosts.write(HOSTS_PATH)
     return bottle.redirect(bottle.request.headers.get('Referer', '/').strip())
-
-@bottle.route('/test')
-def test():
-    hosts_contents = docker.execute('rebagg_mysql_1', 'cat /etc/hosts')
-    return hosts_contents
 
 
 if __name__ == '__main__':

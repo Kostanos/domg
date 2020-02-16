@@ -1,3 +1,3 @@
 #!/bin/bash
-python hostmanager.py &
-python app.py
+echo "Starting hostmanager " && python -u hostmanager.py &
+echo "Starting web interface " && python -u app.py

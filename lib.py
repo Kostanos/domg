@@ -1,16 +1,17 @@
 # coding=utf-8
 """
-Useful classes
+Useful classes borrowed from google.com
 """
-import socket
+__author__ = 'talpah@gmail.com'
+
 import os
 import re
-import yaml
-from bottle import request, response, PluginError
+import socket
 from datetime import datetime
 from datetime import timedelta
 
-__author__ = 'cosmin'
+import yaml
+from bottle import request, response, PluginError
 
 
 class Configuration(object):
@@ -139,7 +140,7 @@ def ip_to_ints(ip):
 
 def compare_ip(ip1, ip2):
     """Comparator function for comparing two IPv4 address strings"""
-    return cmp(ip_to_ints(ip1), ip_to_ints(ip2))
+    return (ip_to_ints(ip1) > ip_to_ints(ip2)) - (ip_to_ints(ip1) < ip_to_ints(ip2))
 
 
 def get_created_comment():

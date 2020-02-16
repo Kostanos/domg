@@ -9,7 +9,7 @@ container_name =con['_Name']
 end
 %>
 <tr>
-    <td>
+    <td style="white-space: nowrap">
         % if nameless:
         <a class="label label-danger label-large container-name" title="Running" href="/details/{{id}}">{{container_name}}</a>
         % elif running and not paused:
@@ -28,13 +28,17 @@ end
         {{con['Config']['Image'][:40] + '...' if len(con['Config']['Image'])>40 else con['Config']['Image']}}
     </td>
     <td>
-        % if con['NetworkSettings']['IPAddress']:
-        <span class="glyphicon glyphicon-signal green"></span> {{con['NetworkSettings']['IPAddress']}}
+        % for net in con['NetworkSettings']['Networks']:
+            <span class="glyphicon glyphicon-signal green"></span> {{con['NetworkSettings']['Networks'][net]['IPAddress']}}
         % end
         % try:
         <br/>
-        <span class="glyphicon glyphicon-globe blue"></span> {{!'<br /><span class="glyphicon glyphicon-globe blue"></span> '.join(hosts[con['NetworkSettings']['IPAddress']])}}
-        % fqhostname = hosts[con['NetworkSettings']['IPAddress']][0]
+        <span class="glyphicon glyphicon-globe blue"></span>
+        % for net in con['NetworkSettings']['Networks']:
+            {{!'<br /><span class="glyphicon glyphicon-globe blue"></span> '.join(hosts[con['NetworkSettings']['Networks'][net]['IPAddress']])}}
+            % fqhostname = hosts[con['NetworkSettings']['Networks'][net]['IPAddress']][0]
+        % end
+
         % except Exception:
         % fqhostname = con['NetworkSettings']['IPAddress']
         % end
@@ -47,7 +51,7 @@ end
         % if container_port == '4200':
         % has_console = True
         % end
-        <div class="portlist">
+        <div class="portlist" style="white-space: nowrap">
             <a target="_blank" href="http://{{fqhostname}}:{{port.split('/')[0]}}">
                 {{container_port}}</a>
             % if hport:
@@ -58,7 +62,7 @@ end
             % end
         </div>
         % end
-        % elif con['Config']['ExposedPorts']:
+        % elif 'ExposedPorts' in con['Config'] and con['Config']['ExposedPorts']:
         % for port, hport in con['Config']['ExposedPorts'].items():
         % container_port = port.split('/')[0]
         <div>
@@ -68,7 +72,7 @@ end
         % end
     </td>
 
-    <td align="right">
+    <td align="right" style="white-space: nowrap">
         % if running:
         <a class="btn btn-default glyphicon glyphicon-stop red startstop" title="Stop" href="/stop/{{con['Id']}}"></a>
         % if has_console:
