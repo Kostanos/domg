@@ -8,13 +8,14 @@ The manager
 __author__ = 'talpah@gmail.com'
 
 import json
+import logging
 import os
 import re
 from datetime import datetime
 from time import strptime, mktime
 
 import bottle
-from docker import Client
+import docker
 from docker.errors import APIError
 
 from hostmanager import HOSTS_PATH
@@ -22,7 +23,7 @@ from lib import FlashMsgPlugin, Hosts, group_containers_by_name, human
 
 STATIC = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'static')
 
-docker = Client()
+client = docker.from_env()
 
 app = bottle.default_app()
 bottle.SimpleTemplate.defaults = {'app': app}
@@ -53,16 +54,16 @@ def generate_menu():
         except bottle.HTTPError:
             irt = None
         active = ' class="active"' if irt and current_route.name == irt.name else ''
-        menu.append('<li%s><a href="%s">%s</a></li>' % (active, url, label))
+        menu.append(f'<li{active}><a href="{url}">{label}</a></li>')
     return " ".join(menu)
 
 
 @bottle.route('/', name="index", method="GET")
 def index():
-    running = docker.containers(quiet=True, all=True)
+    running = client.api.containers(quiet=True, all=True)
     container_list = []
     for con in running:
-        container_info = docker.inspect_container(con['Id'])
+        container_info = client.api.inspect_container(con['Id'])
         container_list.append(container_info)
 
     running_containers = [container for container in container_list if container['State']['Running'] is True]
@@ -105,38 +106,39 @@ def index():
 
 @bottle.route('/details/<container_id>', name="details", method="GET")
 def container_details(container_id):
-    details = docker.inspect_container(container_id)
+    details = client.api.inspect_container(container_id)
     started_at = datetime.fromtimestamp(
         mktime(strptime(details['State']['StartedAt'].split('.')[0], "%Y-%m-%dT%H:%M:%S")))
     raw_finished_at = details['State']['FinishedAt'].split('.')
     if len(raw_finished_at) == 2:
-        raw_finished_at = raw_finished_at[0]
+        finished_at = datetime.fromtimestamp(mktime(strptime(raw_finished_at[0], "%Y-%m-%dT%H:%M:%S")))
+        up_for = human(finished_at - started_at, past_tense='{}', future_tense='{}')
+        finished_at = human(finished_at)
     else:
-        raw_finished_at = '0001-01-01T00:00:00'
-    finished_at = datetime.fromtimestamp(
-        mktime(strptime(raw_finished_at, "%Y-%m-%dT%H:%M:%S")))
+        up_for = 'N/A'
+        finished_at = 'N/A'
     details['State']['StartedAt'] = human(started_at, past_tense='{}', future_tense='{}')
-    details['State']['FinishedAt'] = human(finished_at)
-    details['State']['UpFor'] = human(finished_at - started_at, past_tense='{}', future_tense='{}')
-    details['State']['UpFor'] = details['State']['UpFor'] if details['State']['UpFor'] else 'less than a second'
+    details['State']['FinishedAt'] = finished_at
+    details['State']['UpFor'] = up_for
     return bottle.template('details.html',
                            title="Appstore",
                            menu=generate_menu(),
+                           hosts=Hosts(HOSTS_PATH).get_reversed(),
                            details=details)
 
 
 @bottle.route('/images', name="images", method="GET")
 def list_images():
-    images = docker.images()
-    image_details = [{'tags': img['RepoTags'], 'inspect': docker.inspect_image(img['Id'])} for img in images]
+    images = client.api.images()
+    image_details = [{'tags': img['RepoTags'], 'inspect': client.api.inspect_image(img['Id'])} for img in images]
     return bottle.template('images.html', title="Images | Appstore", menu=generate_menu(), images=image_details)
 
 
 @bottle.route('/deleteimage/<image_id>', name="image_delete", method="GET")
 def image_delete(image_id):
     try:
-        docker.remove_image(image_id)
-        app.flash('Deleted image <em>%s</em>!' % image_id)
+        client.api.remove_image(image_id)
+        app.flash(f'Deleted image <em>{image_id}</em>!')
     except APIError as e:
         app.flash(e.explanation, 'danger')
     return bottle.redirect(bottle.request.headers.get('Referer', '/images').strip())
@@ -144,17 +146,17 @@ def image_delete(image_id):
 
 @bottle.route('/logs/<container_id>', name="logs", method="GET")
 def logs(container_id):
-    log = docker.logs(container_id)
+    log = client.api.logs(container_id)
     if bottle.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        return '<pre>%s</pre>' % log
+        return f'<pre>{log}</pre>'
     return bottle.template('logs.html', title="Logs | Appstore", menu=generate_menu(), log=log)
 
 
 @bottle.route('/delete/<container_id>', name="delete", method="GET")
 def container_delete(container_id):
     try:
-        docker.remove_container(container_id)
-        app.flash('Deleted container <em>%s</em>!' % container_id)
+        client.api.remove_container(container_id)
+        app.flash(f'Deleted container <em>{container_id}</em>!')
     except APIError as e:
         app.flash(e.explanation, 'danger')
     return bottle.redirect(bottle.request.headers.get('Referer', '/').strip())
@@ -163,7 +165,7 @@ def container_delete(container_id):
 @bottle.route('/stop/<container_id>', name="stop", method="GET")
 def container_stop(container_id):
     try:
-        docker.stop(container_id)
+        client.api.stop(container_id)
     except APIError as e:
         bottle.response.content_type = 'application/json'
         return json.dumps({
@@ -172,7 +174,7 @@ def container_stop(container_id):
     if bottle.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         bottle.response.content_type = 'application/json'
         return json.dumps({
-            'href': '/start/%s' % container_id,
+            'href': f'/start/{container_id}',
             'icon': 'glyphicon-play green'
         })
     return bottle.redirect(bottle.request.headers.get('Referer', '/').strip())
@@ -181,7 +183,7 @@ def container_stop(container_id):
 @bottle.route('/start/<container_id>', name="start", method="GET")
 def container_start(container_id):
     try:
-        docker.start(container_id)
+        client.api.start(container_id)
     except APIError as e:
         bottle.response.content_type = 'application/json'
         return json.dumps({
@@ -190,7 +192,7 @@ def container_start(container_id):
     if bottle.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         bottle.response.content_type = 'application/json'
         return json.dumps({
-            'href': '/stop/%s' % container_id,
+            'href': f'/stop/{container_id}',
             'icon': 'glyphicon-stop red'
         })
     return bottle.redirect(bottle.request.headers.get('Referer', '/').strip())
@@ -204,7 +206,7 @@ def callback(path):
 @bottle.route('/hosts', name="hosts", method="GET")
 def list_hosts():
     hosts = Hosts(HOSTS_PATH)
-    running_containers = [docker.inspect_container(container['Id']) for container in docker.containers(quiet=True)]
+    running_containers = [client.api.inspect_container(container['Id']) for container in client.api.containers(quiet=True)]
     ip_list = [info['NetworkSettings']['IPAddress'] for info in running_containers if
                'IPAddress' in info['NetworkSettings']]
 
@@ -226,7 +228,7 @@ def delete_host(hostname):
 
 @bottle.route('/delete-inactive-hosts', name="delete_inactive_hosts", method="GET")
 def delete_inactive_hosts():
-    running_containers = [docker.inspect_container(container['Id']) for container in docker.containers(quiet=True)]
+    running_containers = [client.api.inspect_container(container['Id']) for container in client.api.containers(quiet=True)]
     active_ip_list = [info['NetworkSettings']['IPAddress'] for info in running_containers if
                       'IPAddress' in info['NetworkSettings']]
 
@@ -245,6 +247,6 @@ if __name__ == '__main__':
 
     my_ip = socket.gethostbyname(socket.gethostname())
     # print("Go to http://" + my_ip + "/")
-    print("Hit Ctrl+C to stop")
+    logging.info("Hit Ctrl+C to stop")
     app.install(FlashMsgPlugin(secret='somethingelse'))
     bottle.run(host='0.0.0.0', port=80, quiet=True)

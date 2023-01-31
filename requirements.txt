@@ -1,4 +1,0 @@
-bottle
-PyYAML
-docker-py
-

@@ -3,6 +3,7 @@ apps:
   volumes:
     - /var/run/docker.sock:/var/run/docker.sock
     - /etc/hosts:/host_hosts
+    - ./src:/home/user/application
   hostname: containers
   domainname: domg
   environment:

@@ -113,7 +113,10 @@
                 % if details['NetworkSettings']['Ports']:
                 % for port, hport in details['NetworkSettings']['Ports'].items():
                 % container_port = port.split('/')[0]
+                % fqhostname = hosts[details['NetworkSettings']['Networks'][net]['IPAddress']][0]
                 <li class="list-group-item">
+                    <a target="_blank" href="http://{{fqhostname}}:{{port.split('/')[0]}}">
+                        {{fqhostname}}</a>
                     <a target="_blank" href="http://{{details['NetworkSettings']['IPAddress']}}:{{port.split('/')[0]}}">
                         {{container_port}}</a>
                     % if hport:
