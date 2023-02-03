@@ -29,7 +29,10 @@ def get_ip(container_id):
     :param container_id:
     :return:
     """
-    info = client.api.inspect_container(container_id)
+    try:
+        info = client.api.inspect_container(container_id)
+    except docker.errors.NotFound:
+        return None
     ip = info['NetworkSettings']['IPAddress']
     if not ip:
         for net in info['NetworkSettings']['Networks']:
@@ -44,7 +47,10 @@ def get_hostname(container_id):
     :param container_id:
     :return:
     """
-    info = client.api.inspect_container(container_id)
+    try:
+        info = client.api.inspect_container(container_id)
+    except docker.errors.NotFound:
+        return None
     dom_name = DOMAIN_SUFFIX
     if info['Config']['Domainname']:
         dom_name = info['Config']['Domainname']
@@ -76,23 +82,20 @@ if __name__ == '__main__':
         event = json.loads(event)
         if 'status' not in event:
             continue
-        if event['status'] == 'start':
+        if event['status'] in ['start', 'restart', 'unpause']:
             hostname = get_hostname(event['id'])
             if hostname is None:
-                logging.error(f"ERR: Event 'start' received but no hostname found for {event['id']}")
+                logging.info(f"ERR: Event 'start' received but no hostname found for {event['id']}. Skipping.")
                 continue
-            try:
-                container_ip = get_ip(event['id'])
-            except NotFound:
-                container_ip = None
+            container_ip = get_ip(event['id'])
             if not container_ip:
-                logging.error(f"ERR: Could not find IP address for {hostname}")
+                logging.info(f"ERR: Could not find IP address for {hostname}. Skipping.")
                 continue
             logging.info(f"Adding {hostname} as {container_ip}")
             hosts = Hosts(HOSTS_PATH)
             hosts.set_one(hostname, container_ip)
             hosts.write(HOSTS_PATH)
-        elif event['status'] == 'die':
+        elif event['status'] in ['die', 'stop', 'pause']:
             hostname = get_hostname(event['id'])
             logging.info(f"Removing {hostname}")
             hosts = Hosts(HOSTS_PATH)
